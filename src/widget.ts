@@ -102,7 +102,10 @@ export class NaoRobotModel extends DOMWidgetModel {
       this.changeStatus(
         'Connection to ' + ipAddress + ' could not be established.'
       );
+      return false;
     }
+
+    return true;
   }
 
   disconnect() {
@@ -131,7 +134,10 @@ export class NaoRobotModel extends DOMWidgetModel {
     // Reconnect if possible
     if (!this.qiSession.isConnected()) {
       this.disconnect();
-      await this.connect(this._ipAddress, this._port, requestID);
+      const connectSuccess = await this.connect(this._ipAddress, this._port, requestID);
+      if (!connectSuccess) {
+        return false;
+      }
     }
     return true;
   }
@@ -185,6 +191,13 @@ export class NaoRobotModel extends DOMWidgetModel {
   ) {
     const isConnected: boolean = await this.checkConnection(requestID);
     if (!isConnected) {
+      this.send({
+        isError: true,
+        data: "Unable to connect.",
+        requestID: requestID,
+      });
+      this.set('counter', this.get('counter') + 1);
+      this.save_changes();
       return;
     }
 
