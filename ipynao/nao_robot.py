@@ -20,10 +20,9 @@ class NaoRobotService():
     widget = None
     output = None
 
-    def __init__(self, widget, service_name, output=Output()):
+    def __init__(self, widget, service_name):
         self.name = service_name
         self.widget = widget
-        self.output = output
 
     def _create_msg(self, method_name, *args, **kwargs):
         data = {}
@@ -43,9 +42,10 @@ class NaoRobotService():
         self.widget.send(data)
         request_id = data['requestID']
 
-        display(self.output)
-        self.output.append_stdout(f'Calling service {self.name}...\n')
-        future = await self.widget.wait_for_change('counter', self.output, request_id)
+        output = Output()
+        display(output)
+        output.append_stdout(f'Calling service {self.name}...\n')
+        future = await self.widget.wait_for_change('counter', output, request_id)
 
         return future
         
@@ -130,11 +130,11 @@ class NaoRobotWidget(DOMWidget):
         self.request_id += 1
 
 
-    def service(self, service_name, output=Output()):
+    def service(self, service_name):
         data = {}
         data['command'] = str('createService')
         data['service'] = str(service_name)
         data['requestID'] = self.request_id
         self.send(data)
         self.request_id += 1
-        return NaoRobotService(self, service_name, output)
+        return NaoRobotService(self, service_name)
