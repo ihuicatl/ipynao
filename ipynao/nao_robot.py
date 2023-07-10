@@ -12,6 +12,7 @@ from ipywidgets import DOMWidget, Output
 from traitlets import Unicode, Integer
 from ._frontend import module_name, module_version
 from asyncio import ensure_future, Future
+from IPython.display import display
 
 
 class NaoRobotService():
@@ -42,6 +43,7 @@ class NaoRobotService():
         self.widget.send(data)
         request_id = data['requestID']
 
+        display(self.output)
         self.output.append_stdout(f'Calling service {self.name}...\n')
         future = await self.widget.wait_for_change('counter', self.output, request_id)
 
