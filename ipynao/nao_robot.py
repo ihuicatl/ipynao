@@ -53,6 +53,47 @@ class NaoRobotService():
         return lambda *x, **y: ensure_future(self.call_service(method_name, *x, **y))
 
 
+class Robot():
+
+    def __init__(self) -> None:
+        self.widget = NaoRobotWidget()
+        display(self.widget)
+
+    
+    def _create_service(self, service_name):
+        data = {}
+        data['command'] = str('createService')
+        data['service'] = str(service_name)
+        data['requestID'] = self.widget.request_id
+        self.widget.send(data)
+        self.widget.request_id += 1
+        return NaoRobotService(self.widget, service_name)
+        # TODO: wait for service to become available
+
+    
+    def connect(self, ip_address='nao.local', port='80'):
+        data = {}
+        data['command'] = str('connect')
+        data['ipAddress'] = str(ip_address)
+        data['port'] = str(port)
+        data['requestID'] = self.widget.request_id
+        self.widget.send(data)
+        self.widget.request_id += 1
+
+    
+    def disconnect(self):
+        data = {}
+        data['command'] = str('disconnect')
+        data['requestID'] = self.request_id
+        self.send(data)
+        self.request_id += 1
+
+
+    def __getattr__(self, service_name):
+        print("Service: " + str(service_name)) # REMOVE
+        return self._create_service(service_name)
+    
+
 class NaoRobotWidget(DOMWidget):
     _model_name = Unicode('NaoRobotModel').tag(sync=True)
     _model_module = Unicode(module_name).tag(sync=True)
@@ -108,31 +149,3 @@ class NaoRobotWidget(DOMWidget):
         
         widget.observe(get_value_change, names=value_name)
         return future
-
-
-    def connect(self, ip_address='nao.local', port='80'):      
-        data = {}
-        data['command'] = str('connect')
-        data['ipAddress'] = str(ip_address)
-        data['port'] = str(port)
-        data['requestID'] = self.request_id
-        self.send(data)
-        self.request_id += 1
-
-    
-    def disconnect(self):
-        data = {}
-        data['command'] = str('disconnect')
-        data['requestID'] = self.request_id
-        self.send(data)
-        self.request_id += 1
-
-
-    def service(self, service_name):
-        data = {}
-        data['command'] = str('createService')
-        data['service'] = str(service_name)
-        data['requestID'] = self.request_id
-        self.send(data)
-        self.request_id += 1
-        return NaoRobotService(self, service_name)
