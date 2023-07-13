@@ -18,7 +18,6 @@ from IPython.display import display
 class NaoRobotService():
     name = None
     widget = None
-    output = None
 
     def __init__(self, widget, service_name):
         self.name = service_name
@@ -75,7 +74,6 @@ class NaoRobotWidget(DOMWidget):
 
 
     def _handle_frontend_msg(self, model, msg, buffer):
-        print('Received frontend msg: ', msg)
         request_id = msg['requestID']
         self.response[request_id] = {
             'isError': msg['isError'],
